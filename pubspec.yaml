@@ -1,0 +1,7 @@
+name: dslink-osx
+description: OSX DSLink
+dependencies:
+  osx:
+    git: https://github.com/DirectMyFile/osx.dart.git
+  dslink:
+    git: https://github.com/IOT-DSA/sdk-dslink-dart.git
