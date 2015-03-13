@@ -9,7 +9,15 @@ import "package:args/args.dart";
 
 SimpleNodeProvider provider;
 
+bool hasBattery = false;
+
 main(List<String> argv) async {
+  try {
+    Battery.getLevel();
+    hasBattery = true;
+  } catch (e) {
+  }
+
   var argp = new ArgParser();
   var args = argp.parse(argv);
 
@@ -73,10 +81,6 @@ main(List<String> argv) async {
             "default": "Default Voice"
           }
         ]
-      },
-      "Battery Level": {
-        r"$type": "number",
-        r"?value": Battery.getLevel()
       },
       "Plugged In": {
         r"$type": "bool",
@@ -187,15 +191,24 @@ main(List<String> argv) async {
     }
   };
 
+  if (hasBattery) {
+    initializer["System"]["Battery Level"] = {
+      r"$type": "number",
+      r"?value": Battery.getLevel()
+    };
+  }
+
   loadExtensions(initializer);
 
   provider.init(initializer);
 
   new Timer.periodic(new Duration(seconds: 3), (t) {
-    provider.getNode("/System/Battery Level").updateValue(Battery.getLevel());
+    if (hasBattery) {
+      provider.getNode("/System/Battery Level").updateValue(Battery.getLevel());
+    }
+
     provider.getNode("/System/Volume/Level").updateValue(AudioVolume.getVolume());
     provider.getNode("/System/Volume/Muted").updateValue(AudioVolume.isMuted());
-    provider.getNode("/System/Is Plugged In").updateValue(Battery.isPluggedIn());
     var freemem = getFreeMemory();
     provider.getNode("/System/Free Memory").updateValue(freemem);
     provider.getNode("/System/Used Memory").updateValue(_availableMemory - freemem);
@@ -271,7 +284,7 @@ void loadExtensions(Map i) {
         r"$function": "${id}.activate",
         r"$invokable": "write"
       },
-      "Close": {
+      "Quit": {
         r"$function": "${id}.activate",
         r"$invokable": "write"
       },
