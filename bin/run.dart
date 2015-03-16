@@ -289,6 +289,7 @@ void loadExtensions(Map i) {
         r"$invokable": "write"
       },
       "Application Name": {
+        r"$type": "string",
         "?value": name
       }
     };
