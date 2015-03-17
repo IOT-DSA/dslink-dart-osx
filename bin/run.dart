@@ -6,6 +6,8 @@ import "package:dslink/client.dart";
 import "package:dslink/responder.dart";
 import "package:args/args.dart";
 
+const Duration defaultTick = const Duration(seconds: 3);
+
 SimpleNodeProvider provider;
 
 bool hasBattery = false;
@@ -64,7 +66,25 @@ main(List<String> argv) async {
     ]);
   });
 
+  provider.registerFunction("configure.tick", (path, params) {
+    if (params["seconds"] != null) {
+      tick = new Duration(seconds: params["seconds"]);
+      ticker();
+    }
+  });
+
   var initializer = {
+    "Configure Tick": {
+      r"$invokable": "write",
+      r"$function": "configure.tick",
+      r"$params": [
+        {
+          "name": "seconds",
+          "type": "int",
+          "default": tick.inSeconds
+        }
+      ]
+    },
     "System": {
       "Speak": {
         r"$invokable": "write",
@@ -201,17 +221,7 @@ main(List<String> argv) async {
 
   provider.init(initializer);
 
-  new Timer.periodic(new Duration(seconds: 3), (t) {
-    if (hasBattery) {
-      provider.getNode("/System/Battery Level").updateValue(Battery.getLevel());
-    }
-
-    provider.getNode("/System/Volume/Level").updateValue(AudioVolume.getVolume());
-    provider.getNode("/System/Volume/Muted").updateValue(AudioVolume.isMuted());
-    var freemem = getFreeMemory();
-    provider.getNode("/System/Free Memory").updateValue(freemem);
-    provider.getNode("/System/Used Memory").updateValue(_availableMemory - freemem);
-  });
+  ticker();
 
   provider.getNode("/System/Volume/Level").valueStream.listen((x) {
     AudioVolume.setVolume(x.value);
@@ -254,6 +264,32 @@ int getFreeMemory() {
   var mem = (int.parse(out) * 4096) ~/ 1048576;
 
   return mem;
+}
+
+Timer timer;
+Duration tick = defaultTick;
+
+ticker() {
+  if (timer != null && timer.isActive) {
+    timer.cancel();
+    timer = null;
+  }
+
+  timer = new Timer.periodic(tick, (_) async {
+    await sync();
+  });
+}
+
+sync() async {
+  if (hasBattery) {
+    provider.getNode("/System/Battery Level").updateValue(Battery.getLevel());
+  }
+
+  provider.getNode("/System/Volume/Level").updateValue(AudioVolume.getVolume());
+  provider.getNode("/System/Volume/Muted").updateValue(AudioVolume.isMuted());
+  var freemem = getFreeMemory();
+  provider.getNode("/System/Free Memory").updateValue(freemem);
+  provider.getNode("/System/Used Memory").updateValue(_availableMemory - freemem);
 }
 
 int _availableMemory = SystemInformation.getPhysicalMemory();
