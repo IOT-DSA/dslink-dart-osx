@@ -2,9 +2,8 @@ import "dart:async";
 import "dart:io";
 
 import "package:osx/osx.dart";
-import "package:dslink/http_client.dart";
+import "package:dslink/client.dart";
 import "package:dslink/responder.dart";
-import "package:dslink/src/crypto/pk.dart";
 import "package:args/args.dart";
 
 SimpleNodeProvider provider;
