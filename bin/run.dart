@@ -4,7 +4,6 @@ import "dart:io";
 import "package:osx/osx.dart";
 import "package:dslink/client.dart";
 import "package:dslink/responder.dart";
-import "package:args/args.dart";
 
 const Duration defaultTick = const Duration(seconds: 3);
 
@@ -12,22 +11,11 @@ SimpleNodeProvider provider;
 
 bool hasBattery = false;
 
-main(List<String> argv) async {
+main(List<String> args) async {
   try {
     Battery.getLevel();
     hasBattery = true;
   } catch (e) {
-  }
-
-  var argp = new ArgParser();
-  var args = argp.parse(argv);
-
-  if (args.rest.length != 1) {
-    print("Usage: dslink-osx [options] <url>");
-    if (argp.usage.isNotEmpty) {
-      print(argp.usage);
-    }
-    exit(1);
   }
 
   provider = new SimpleNodeProvider();
@@ -238,12 +226,12 @@ main(List<String> argv) async {
     await keyFile.writeAsString(new PrivateKey.generate().saveToString());
   }
 
-  var link = new HttpClientLink(
-    args.rest[0],
+  var link = LinkHelper.create(
+    args,
     "osx-",
     new PrivateKey.loadFromString(await keyFile.readAsString()),
-    isResponder: true,
-    nodeProvider: provider
+    command: "osx-link",
+    provider: provider
   );
 
   await link.connect();
