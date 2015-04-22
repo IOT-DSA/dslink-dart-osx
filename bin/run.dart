@@ -7,32 +7,58 @@ import "package:dslink/responder.dart";
 
 const Duration defaultTick = const Duration(seconds: 3);
 
+LinkProvider link;
 SimpleNodeProvider provider;
 
 bool hasBattery = false;
 
-main(List<String> args) async {
-  try {
-    Battery.getLevel();
-    hasBattery = true;
-  } catch (e) {
+class ActivateApplicationNode extends SimpleNode {
+  String app;
+
+  ActivateApplicationNode(String path, [this.app]) : super(path);
+
+  @override
+  Object onInvoke(Map params) {
+    if (getConfig(r"$application") != null) {
+      app = getConfig(r"$application");
+    }
+
+    Applications.activate(app == null ? params["application"] : app);
+    return null;
   }
+}
 
-  provider = new SimpleNodeProvider();
+class QuitApplicationNode extends SimpleNode {
+  String app;
 
-  provider.registerFunction("system.speak", (path, params) async {
+  QuitApplicationNode(String path, [this.app]) : super(path);
+
+  @override
+  Object onInvoke(Map params) {
+    if (getConfig(r"$application") != null) {
+      app = getConfig(r"$application");
+    }
+
+    Applications.quit(app == null ? params["application"] : app);
+    return null;
+  }
+}
+
+class SpeakNode extends SimpleNode {
+  SpeakNode(String path) : super(path);
+
+  @override
+  Object onInvoke(Map params) {
     speak(params["text"], voice: params["voice"] == "Default Voice" ? null : params["voice"]);
-  });
+    return null;
+  }
+}
 
-  provider.registerFunction("applications.activate", (path, params) {
-    Applications.activate(params["application"]);
-  });
+class OpenedAppsNode extends SimpleNode {
+  OpenedAppsNode(String path) : super(path);
 
-  provider.registerFunction("applications.quit", (path, params) {
-    Applications.quit(params["application"]);
-  });
-
-  provider.registerFunction("applications.opened", (path, params) {
+  @override
+  Object onInvoke(Map params) {
     return new SimpleTableResult(TaskManager.getOpenTasks().map((it) => {
       "name": it
     }).toList(), [
@@ -41,10 +67,28 @@ main(List<String> args) async {
         "type": "string"
       }
     ]);
-  });
+  }
+}
 
-  provider.registerFunction("applications.list", (path, params) {
-    return new SimpleTableResult(Applications.list(normal: true).map((it) => {
+class ConfigureTickNode extends SimpleNode {
+  ConfigureTickNode(String path) : super(path);
+
+  @override
+  Object onInvoke(Map params) {
+    if (params["seconds"] != null) {
+      tick = new Duration(seconds: params["seconds"]);
+      ticker();
+    }
+    return null;
+  }
+}
+
+class AppsNode extends SimpleNode {
+  AppsNode(String path) : super(path);
+
+  @override
+  Object onInvoke(Map params) {
+    return new SimpleTableResult(Applications.list().map((it) => {
       "name": it.name
     }).toList(), [
       {
@@ -52,19 +96,20 @@ main(List<String> args) async {
         "type": "string"
       }
     ]);
-  });
+  }
+}
 
-  provider.registerFunction("configure.tick", (path, params) {
-    if (params["seconds"] != null) {
-      tick = new Duration(seconds: params["seconds"]);
-      ticker();
-    }
-  });
+main(List<String> args) async {
+  try {
+    Battery.getLevel();
+    hasBattery = true;
+  } catch (e) {
+  }
 
   var initializer = {
     "Configure Tick": {
       r"$invokable": "write",
-      r"$function": "configure.tick",
+      r"$is": "configureTick",
       r"$params": [
         {
           "name": "seconds",
@@ -76,7 +121,7 @@ main(List<String> args) async {
     "System": {
       "Speak": {
         r"$invokable": "write",
-        r"$function": "system.speak",
+        r"$is": "speak",
         r"$params": [
           {
             "name": "text",
@@ -157,7 +202,7 @@ main(List<String> args) async {
     "Applications": {
       "Activate": {
         r"$invokable": "write",
-        r"$function": "applications.activate",
+        r"$is": "activate",
         r"$params": [
           {
             "name": "application",
@@ -167,7 +212,7 @@ main(List<String> args) async {
       },
       "List": {
         r"$invokable": "read",
-        r"$function": "applications.list",
+        r"$is": "applications",
         r"$columns": [
           {
             "name": "applications",
@@ -177,7 +222,7 @@ main(List<String> args) async {
       },
       "Get Open": {
         r"$invokable": "read",
-        r"$function": "applications.opened",
+        r"$is": "opened",
         r"$columns": [
           {
             "name": "applications",
@@ -187,7 +232,7 @@ main(List<String> args) async {
       },
       "Quit": {
         r"$invokable": "write",
-        r"$function": "applications.quit",
+        r"$is": "quit",
         r"$params": [
           {
             "name": "application",
@@ -207,32 +252,28 @@ main(List<String> args) async {
 
   loadExtensions(initializer);
 
-  provider.init(initializer);
+  Map<String, Function> profiles = {
+    "activate": (String path) => new ActivateApplicationNode(path),
+    "quit": (String path) => new QuitApplicationNode(path),
+    "applications": (String path) => new AppsNode(path),
+    "opened": (String path) => new OpenedAppsNode(path),
+    "configureTick": (String path) => new ConfigureTickNode(path),
+    "speak": (String path) => new SpeakNode(path)
+  };
+
+  provider = new SimpleNodeProvider(initializer, profiles);
 
   ticker();
 
-  provider.getNode("/System/Volume/Level").valueStream.listen((x) {
-    AudioVolume.setVolume(x.value);
+  provider.getNode("/System/Volume/Level").subscribe((update) {
+    AudioVolume.setVolume(update.value);
   });
 
-  provider.getNode("/System/Volume/Muted").valueStream.listen((x) {
-    AudioVolume.setMuted(x.value);
+  provider.getNode("/System/Volume/Muted").subscribe((update) {
+    AudioVolume.setMuted(update.value);
   });
 
-  var keyFile = new File("${Platform.environment["HOME"]}/Library/DSLinks/OSX/key.pem");
-
-  if (!(await keyFile.exists())) {
-    await keyFile.create(recursive: true);
-    await keyFile.writeAsString(new PrivateKey.generate().saveToString());
-  }
-
-  var link = LinkHelper.create(
-    args,
-    "osx-",
-    new PrivateKey.loadFromString(await keyFile.readAsString()),
-    command: "osx-link",
-    provider: provider
-  );
+  link = new LinkProvider(args, "MacOSX-", command: "osx-link", nodeProvider: provider);
 
   await link.connect();
   print("Connected");
@@ -294,22 +335,16 @@ void loadExtensions(Map i) {
 
     var id = name.toLowerCase().replaceAll(" ", "_");
 
-    provider.registerFunction("${id}.close", (path, params) {
-      Applications.quit(name);
-    });
-
-    provider.registerFunction("${id}.activate", (path, params) {
-      Applications.activate(name);
-    });
-
     return i[name] = {
       "Activate": {
-        r"$function": "${id}.activate",
-        r"$invokable": "write"
+        r"$is": "activate",
+        r"$invokable": "write",
+        r"$application": name
       },
       "Quit": {
-        r"$function": "${id}.activate",
-        r"$invokable": "write"
+        r"$is": "quit",
+        r"$invokable": "write",
+        r"$application": name
       },
       "Application Name": {
         r"$type": "string",
