@@ -218,7 +218,8 @@ main(List<String> args) async {
             "name": "applications",
             "type": "tabledata"
           }
-        ]
+        ],
+        r"$result": "table"
       },
       "Get Open": {
         r"$invokable": "read",
@@ -228,7 +229,8 @@ main(List<String> args) async {
             "name": "applications",
             "type": "tabledata"
           }
-        ]
+        ],
+        r"$result": "table"
       },
       "Quit": {
         r"$invokable": "write",
