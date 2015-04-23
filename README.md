@@ -20,5 +20,6 @@ Make sure to [Install Dart](https://www.dartlang.org/downloads/mac.html).
 ```bash
 git clone https://github.com/IOT-DSA/dslink-dart-osx.git OSX-Link
 cd OSX-Link
+pub get
 dart bin/run.dart --broker {BROKER URL}
 ```
