@@ -15,7 +15,7 @@ A DSLink to work with Mac OS X
 
 ## Usage
 
-Make sure to [Install Dart](https://www.dartlang.org/downloads/).
+Make sure to [Install Dart](https://www.dartlang.org/downloads/mac.html).
 
 ```bash
 git clone https://github.com/IOT-DSA/dslink-dart-osx.git OSX-Link
