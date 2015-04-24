@@ -56,6 +56,21 @@ class QuitApplicationNode extends SimpleNode {
   }
 }
 
+class UpdateLocationNode extends SimpleNode {
+  UpdateLocationNode(String path) : super(path);
+
+  @override
+  Object onInvoke(Map params) {
+    Geolocation.getLocation().then((info) {
+      provider.getNode("/Location/Latitude").updateValue(info.latitude);
+      provider.getNode("/Location/Longitude").updateValue(info.longitude);
+      provider.getNode("/Location/Accuracy").updateValue(info.accuracy);
+      provider.getNode("/Location/Timestamp").updateValue(info.timestamp);
+    });
+    return [];
+  }
+}
+
 class SpeakNode extends SimpleNode {
   SpeakNode(String path) : super(path);
 
@@ -259,6 +274,25 @@ main(List<String> args) async {
           }
         ]
       }
+    },
+    "Location": {
+      "Update": {
+        r"$invokable": "write",
+        r"$is": "updateLocation",
+        r"$result": "values"
+      },
+      "Latitude": {
+        r"$type": "number"
+      },
+      "Longitude": {
+        r"$type": "number"
+      },
+      "Accuracy": {
+        r"$type": "number"
+      },
+      "Timestamp": {
+        r"$type": "string"
+      }
     }
   };
 
@@ -277,10 +311,13 @@ main(List<String> args) async {
     "applications": (String path) => new AppsNode(path),
     "opened": (String path) => new OpenedAppsNode(path),
     "configureTick": (String path) => new ConfigureTickNode(path),
-    "speak": (String path) => new SpeakNode(path)
+    "speak": (String path) => new SpeakNode(path),
+    "updateLocation": (String path) => new UpdateLocationNode(path)
   };
 
   provider = new SimpleNodeProvider(initializer, profiles);
+
+  (provider.getNode("/Location/Update") as SimpleNode).onInvoke({});
 
   ticker();
 
