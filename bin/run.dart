@@ -60,16 +60,11 @@ class OpenedAppsNode extends SimpleNode {
   @override
   Object onInvoke(Map params) {
     return new SimpleTableResult(TaskManager.getOpenTasks().map((it) => {
-      "name": it,
-      "window count": Applications.getWindowCount(it)
+      "name": it
     }).toList(), [
       {
         "name": "name",
         "type": "string"
-      },
-      {
-        "name": "window count",
-        "type": "int"
       }
     ]);
   }
