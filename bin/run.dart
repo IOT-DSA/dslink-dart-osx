@@ -60,11 +60,16 @@ class OpenedAppsNode extends SimpleNode {
   @override
   Object onInvoke(Map params) {
     return new SimpleTableResult(TaskManager.getOpenTasks().map((it) => {
-      "name": it
+      "name": it,
+      "window count": Applications.getWindowCount(it)
     }).toList(), [
       {
         "name": "name",
         "type": "string"
+      },
+      {
+        "name": "window count",
+        "type": "int"
       }
     ]);
   }
@@ -283,13 +288,13 @@ main(List<String> args) async {
 
 int getFreeMemory() {
   var out = Process.runSync("vm_stat", [])
-  .stdout
-  .split("\n")
-  .map((it) => it.trim())
-  .firstWhere((it) => it.startsWith("Pages free:"))
-  .split(":")
-  .last
-  .trim();
+    .stdout
+    .split("\n")
+    .map((it) => it.trim())
+    .firstWhere((it) => it.startsWith("Pages free:"))
+    .split(":")
+    .last
+    .trim();
   out = out.substring(0, out.length - 1);
 
   var mem = (int.parse(out) * 4096) ~/ 1048576;
