@@ -19,7 +19,6 @@ class ActivateApplicationNode extends SimpleNode {
 
   @override
   Object onInvoke(Map params) {
-    print(params);
     if (getConfig(r"$application") != null) {
       app = getConfig(r"$application");
     }
