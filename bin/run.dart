@@ -19,12 +19,19 @@ class ActivateApplicationNode extends SimpleNode {
 
   @override
   Object onInvoke(Map params) {
+    print(params);
     if (getConfig(r"$application") != null) {
       app = getConfig(r"$application");
     }
 
-    Applications.activate(app == null ? params["application"] : app);
-    return null;
+    var c = app == null ? params["application"] : app;
+
+    if (c == null) {
+      return [];
+    }
+
+    Applications.activate(c);
+    return [];
   }
 }
 
@@ -39,8 +46,14 @@ class QuitApplicationNode extends SimpleNode {
       app = getConfig(r"$application");
     }
 
-    Applications.quit(app == null ? params["application"] : app);
-    return null;
+    var c = app == null ? params["application"] : app;
+
+    if (c == null) {
+      return [];
+    }
+
+    Applications.quit(c);
+    return [];
   }
 }
 
@@ -50,7 +63,7 @@ class SpeakNode extends SimpleNode {
   @override
   Object onInvoke(Map params) {
     speak(params["text"], voice: params["voice"] == "Default Voice" ? null : params["voice"]);
-    return null;
+    return [];
   }
 }
 
@@ -79,7 +92,7 @@ class ConfigureTickNode extends SimpleNode {
       tick = new Duration(seconds: params["seconds"]);
       ticker();
     }
-    return null;
+    return [];
   }
 }
 
@@ -188,11 +201,15 @@ main(List<String> args) async {
       },
       "Used Memory": {
         r"$type": "int",
-        "?value": _availableMemory - getFreeMemory()
+        "?value": _availableMemory - getFreeMemory(),
+        r"$min": 0,
+        r"$max": _availableMemory
       },
       "Free Memory": {
         r"$type": "int",
-        "?value": getFreeMemory()
+        "?value": getFreeMemory(),
+        r"$min": 0,
+        r"$max": _availableMemory
       },
       "Total Memory": {
         r"$type": "int",
@@ -208,7 +225,8 @@ main(List<String> args) async {
             "name": "application",
             "type": "string"
           }
-        ]
+        ],
+        r"$result": "values"
       },
       "List": {
         r"$invokable": "read",
