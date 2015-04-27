@@ -81,6 +81,26 @@ class SpeakNode extends SimpleNode {
   }
 }
 
+class SleepNode extends SimpleNode {
+  SleepNode(String path) : super(path);
+
+  @override
+  Object onInvoke(Map params) {
+    Computer.sleep();
+    return [];
+  }
+}
+
+class WakeNode extends SimpleNode {
+  WakeNode(String path) : super(path);
+
+  @override
+  Object onInvoke(Map params) {
+    Computer.wake();
+    return [];
+  }
+}
+
 class OpenedAppsNode extends SimpleNode {
   OpenedAppsNode(String path) : super(path);
 
@@ -160,6 +180,16 @@ main(List<String> args) async {
             "default": "Default Voice"
           }
         ]
+      },
+      "Sleep": {
+        r"$invokable": "write",
+        r"$is": "sleep",
+        r"$params": []
+      },
+      "Wake": {
+        r"$invokable": "write",
+        r"$is": "wake",
+        r"$params": []
       },
       "Plugged In": {
         r"$type": "bool",
@@ -312,7 +342,9 @@ main(List<String> args) async {
     "opened": (String path) => new OpenedAppsNode(path),
     "configureTick": (String path) => new ConfigureTickNode(path),
     "speak": (String path) => new SpeakNode(path),
-    "updateLocation": (String path) => new UpdateLocationNode(path)
+    "updateLocation": (String path) => new UpdateLocationNode(path),
+    "sleep": (String path) => new SleepNode(path),
+    "wake": (String path) => new WakeNode(path)
   };
 
   provider = new SimpleNodeProvider(initializer, profiles);
