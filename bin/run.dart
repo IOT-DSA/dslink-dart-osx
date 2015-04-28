@@ -454,12 +454,12 @@ void loadExtensions(Map i) {
     }
   }
 
-  var launchpad = app("Launchpad");
-  var missionControl = app("Mission Control");
-  var textual = app("Textual 5");
+  app("Launchpad");
+  app("Mission Control");
+  app("Textual 5");
   var atom = app("Atom");
   var finder = app("Finder");
-  var activityMonitor = app("Activity Monitor");
+  app("Activity Monitor");
 
   action(atom, "Create Document", (params) {
     Atom.createDocument();
