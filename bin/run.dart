@@ -2,8 +2,7 @@ import "dart:async";
 import "dart:io";
 
 import "package:osx/osx.dart";
-import "package:dslink/client.dart";
-import "package:dslink/responder.dart";
+import "package:dslink/dslink.dart";
 
 const Duration defaultTick = const Duration(seconds: 3);
 
@@ -26,11 +25,11 @@ class ActivateApplicationNode extends SimpleNode {
     var c = app == null ? params["application"] : app;
 
     if (c == null) {
-      return [];
+      return {};
     }
 
     Applications.activate(c);
-    return [];
+    return {};
   }
 }
 
@@ -48,11 +47,11 @@ class QuitApplicationNode extends SimpleNode {
     var c = app == null ? params["application"] : app;
 
     if (c == null) {
-      return [];
+      return {};
     }
 
     Applications.quit(c);
-    return [];
+    return {};
   }
 }
 
@@ -60,14 +59,16 @@ class UpdateLocationNode extends SimpleNode {
   UpdateLocationNode(String path) : super(path);
 
   @override
-  Object onInvoke(Map params) {
-    Geolocation.getLocation().then((info) {
+  Object onInvoke(Map params) async {
+    try {
+      var info = await Geolocation.getLocation();
       provider.getNode("/Location/Latitude").updateValue(info.latitude);
       provider.getNode("/Location/Longitude").updateValue(info.longitude);
       provider.getNode("/Location/Accuracy").updateValue(info.accuracy);
       provider.getNode("/Location/Timestamp").updateValue(info.timestamp);
-    });
-    return [];
+    } catch (e) {
+    }
+    return {};
   }
 }
 
@@ -77,7 +78,7 @@ class SpeakNode extends SimpleNode {
   @override
   Object onInvoke(Map params) {
     speak(params["text"], voice: params["voice"] == "Default Voice" ? null : params["voice"]);
-    return [];
+    return {};
   }
 }
 
@@ -87,7 +88,7 @@ class SleepNode extends SimpleNode {
   @override
   Object onInvoke(Map params) {
     Computer.sleep();
-    return [];
+    return {};
   }
 }
 
@@ -97,7 +98,7 @@ class WakeNode extends SimpleNode {
   @override
   Object onInvoke(Map params) {
     Computer.wake();
-    return [];
+    return {};
   }
 }
 
