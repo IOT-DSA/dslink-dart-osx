@@ -1,5 +1,5 @@
 {
-  "name": "osx",
+  "name": "dslink-dart-osx",
   "version": "1.0.0",
   "description": "Mac OS X DSLink",
   "main": "bin/run.dart",
