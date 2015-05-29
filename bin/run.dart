@@ -155,7 +155,8 @@ main(List<String> args) async {
   }
 
   var initializer = {
-    "Configure Tick": {
+    "Configure_Tick": {
+      r"$name": "Configure Tick",
       r"$invokable": "write",
       r"$is": "configureTick",
       r"$params": [
@@ -192,7 +193,8 @@ main(List<String> args) async {
         r"$is": "wake",
         r"$params": []
       },
-      "Plugged In": {
+      "Plugged_In": {
+        r"$name": "Plugged In",
         r"$type": "bool",
         r"?value": Battery.isPluggedIn()
       },
@@ -212,15 +214,18 @@ main(List<String> args) async {
         r"$type": "string",
         "?value": SystemInformation.getVersion()
       },
-      "Computer Name": {
+      "Computer_Name": {
+        r"$name": "Computer Name",
         r"$type": "string",
         "?value": SystemInformation.getComputerName()
       },
-      "CPU Speed": {
+      "CPU_Speed": {
+        r"$name": "CPU Speed",
         r"$type": "int",
         "?value": SystemInformation.getCpuSpeed()
       },
-      "CPU Type": {
+      "CPU_Type": {
+        r"$name": "CPU Type",
         r"$type": "string",
         "?value": SystemInformation.getCpuType()
       },
@@ -228,7 +233,8 @@ main(List<String> args) async {
         r"$type": "string",
         "?value": SystemInformation.getHostName()
       },
-      "Home Directory": {
+      "Home_Directory": {
+        r"$name": "Home Directory",
         r"$type": "string",
         "?value": SystemInformation.getHomeDirectory()
       },
@@ -236,27 +242,32 @@ main(List<String> args) async {
         r"$type": "string",
         "?value": SystemInformation.getUser()
       },
-      "User Name": {
+      "User_Name": {
+        r"$name": "User Name",
         r"$type": "string",
         "?value": SystemInformation.getUserName()
       },
-      "Boot Volume": {
+      "Boot_Volume": {
+        r"$name": "Boot Volume",
         r"$type": "string",
         "?value": SystemInformation.getBootVolume()
       },
-      "Used Memory": {
+      "Used_Memory": {
+        r"$name": "Used Memory",
         r"$type": "int",
         "?value": _availableMemory - getFreeMemory(),
         r"$min": 0,
         r"$max": _availableMemory
       },
-      "Free Memory": {
+      "Free_Memory": {
+        r"$name": "Free Memory",
         r"$type": "int",
         "?value": getFreeMemory(),
         r"$min": 0,
         r"$max": _availableMemory
       },
-      "Total Memory": {
+      "Total_Memory": {
+        r"$name": "Total Memory",
         r"$type": "int",
         "?value": _availableMemory
       }
@@ -284,7 +295,8 @@ main(List<String> args) async {
         ],
         r"$result": "table"
       },
-      "Get Open": {
+      "Get_Open": {
+        r"$name": "Get Open",
         r"$invokable": "read",
         r"$is": "opened",
         r"$columns": [
@@ -328,7 +340,8 @@ main(List<String> args) async {
   };
 
   if (hasBattery) {
-    initializer["System"]["Battery Level"] = {
+    initializer["System"]["Battery_Level"] = {
+      r"$name": "Battery Level",
       r"$type": "number",
       r"?value": Battery.getLevel()
     };
@@ -363,9 +376,7 @@ main(List<String> args) async {
   });
 
   link = new LinkProvider(args, "MacOSX-", command: "osx-link", nodeProvider: provider);
-
-  await link.connect();
-  print("Connected");
+  link.connect();
 }
 
 int getFreeMemory() {
@@ -406,8 +417,8 @@ sync() async {
   provider.getNode("/System/Volume/Level").updateValue(AudioVolume.getVolume());
   provider.getNode("/System/Volume/Muted").updateValue(AudioVolume.isMuted());
   var freemem = getFreeMemory();
-  provider.getNode("/System/Free Memory").updateValue(freemem);
-  provider.getNode("/System/Used Memory").updateValue(_availableMemory - freemem);
+  provider.getNode("/System/Free_Memory").updateValue(freemem);
+  provider.getNode("/System/Used_Memory").updateValue(_availableMemory - freemem);
 }
 
 int _availableMemory = SystemInformation.getPhysicalMemory();
@@ -416,15 +427,15 @@ void loadExtensions(Map i) {
   Map app(String name) {
     if (!Applications.isInstalled(name)) {
       return {
-        "Application Name": {
+        "Application_Name": {
+          r"$name": "Application Name",
           "?value": name
         }
       };
     }
 
-    var id = name.toLowerCase().replaceAll(" ", "_");
-
-    return i[name] = {
+    return i[name.replaceAll(" ", "_")] = {
+      r"$name": name,
       "Activate": {
         r"$is": "activate",
         r"$invokable": "write",
@@ -435,7 +446,8 @@ void loadExtensions(Map i) {
         r"$invokable": "write",
         r"$application": name
       },
-      "Application Name": {
+      "Application_Name": {
+        r"$name": "Application Name",
         r"$type": "string",
         "?value": name
       }
@@ -443,15 +455,16 @@ void loadExtensions(Map i) {
   }
 
   void action(map, String name, dynamic handler(Map<String, dynamic> params), [List<Map<String, dynamic>> params]) {
-    var appName = map["Application Name"]["?value"];
+    var appName = map["Application_Name"]["?value"];
     var id = appName.toLowerCase().replaceAll(" ", "_");
-    map[name] = {
-      r"$function": id,
+    map[name.replaceAll(" ", "_")] = {
+      r"$name": name,
+      r"$is": id,
       r"$invokable": "write"
     };
 
     if (params != null) {
-      map[name][r"$params"] = params;
+      map[name.replaceAll(" ", "_")][r"$params"] = params;
     }
   }
 
