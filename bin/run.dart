@@ -411,7 +411,7 @@ ticker() {
 
 sync() async {
   if (hasBattery) {
-    provider.getNode("/System/Battery Level").updateValue(Battery.getLevel());
+    provider.getNode("/System/Battery_Level").updateValue(Battery.getLevel());
   }
 
   provider.getNode("/System/Volume/Level").updateValue(AudioVolume.getVolume());
