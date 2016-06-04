@@ -77,7 +77,11 @@ class SpeakNode extends SimpleNode {
 
   @override
   Object onInvoke(Map params) {
-    speak(params["text"], voice: params["voice"] == "Default Voice" ? null : params["voice"]);
+    speak(
+      params["text"],
+      voice:
+      params["voice"] == "Default Voice" ? null : params["voice"]
+    );
     return {};
   }
 }

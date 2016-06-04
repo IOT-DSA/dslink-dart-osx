@@ -13,3 +13,4 @@ out/
 *.swp
 .c9
 .dslink.key
+.packages

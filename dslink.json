@@ -4,7 +4,7 @@
   "description": "Mac OS X DSLink",
   "main": "bin/run.dart",
   "engines": {
-    "dart": ">=1.9.0"
+    "dart": ">=1.15.0"
   },
   "getDependencies": [
     "pub get"
@@ -15,6 +15,13 @@
     },
     "token": {
       "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "log": {
+      "type": "enum",
+      "default": "info"
     }
   }
 }
