@@ -1,7 +1,7 @@
 import "dart:async";
 import "dart:io";
 
-import "package:osx/osx.dart";
+import "package:mac/mac.dart";
 import "package:dslink/dslink.dart";
 
 const Duration defaultTick = const Duration(seconds: 3);
