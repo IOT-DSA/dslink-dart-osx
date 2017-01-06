@@ -1,5 +1,5 @@
-name: dslink_osx
-description: OSX DSLink
+name: dslink_macos
+description: macOS DSLink
 dependencies:
   args: ">=0.12.0 <0.15.0"
   mac:

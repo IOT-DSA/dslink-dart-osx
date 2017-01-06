@@ -379,7 +379,7 @@ main(List<String> args) async {
     AudioVolume.setMuted(update.value);
   });
 
-  link = new LinkProvider(args, "MacOSX-", command: "osx-link", nodeProvider: provider);
+  link = new LinkProvider(args, "macOS-", command: "osx-link", nodeProvider: provider);
   link.connect();
 }
 

@@ -1,6 +1,6 @@
-# Mac OS X DSLink
+# macOS DSLink
 
-A DSLink to work with Mac OS X
+A DSLink to work with macOS.
 
 ## Features
 
