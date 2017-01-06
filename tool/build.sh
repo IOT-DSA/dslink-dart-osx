@@ -11,4 +11,4 @@ cp -R bin build/
 rm -rf build/bin/packages
 cp pubspec.yaml dslink.json build/
 cd build
-zip -r ../../../files/dslink-dart-osx.zip .
+zip -r ../../../files/dslink-dart-macos.zip .
